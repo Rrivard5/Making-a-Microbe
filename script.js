@@ -1,4 +1,4 @@
-// script.js (fixed: re-enabled back buttons and button functionality across screens)
+// script.js (fixed step 2 Next buttons, removed protozoan, added default empty dropdown options)
 
 const app = document.getElementById("app");
 
@@ -39,8 +39,8 @@ const screens = {
       <button onclick="selectType('bacterium')">Bacterium</button>
       <button onclick="selectType('fungus')">Fungus</button>
       <button onclick="selectType('helminth')">Helminth</button>
-      <button onclick="selectType('protozoan')">Protozoan</button>
-      <br><br><button onclick="goTo('welcome')">Back</button>
+      <p><em>Note: Protozoa are too biologically diverse to be fully supported in this app. You are welcome to design one on your own.</em></p>
+      <br><button onclick="goTo('welcome')">Back</button>
     `;
   },
 
@@ -52,17 +52,20 @@ const screens = {
       html += `
         <label>Capsid Shape:</label>
         <select id="capsid">
+          <option value="">-- Select --</option>
           <option>Icosahedral</option>
           <option>Helical</option>
           <option>Complex</option>
         </select>
         <label>Envelope:</label>
         <select id="envelope">
+          <option value="">-- Select --</option>
           <option>Yes</option>
           <option>No</option>
         </select>
         <label>Genome Type:</label>
         <select id="genome">
+          <option value="">-- Select --</option>
           <option>ssRNA (positive-sense)</option>
           <option>ssRNA (negative-sense)</option>
           <option>dsRNA</option>
@@ -75,6 +78,7 @@ const screens = {
       html += `
         <label>Shape:</label>
         <select id="shape">
+          <option value="">-- Select --</option>
           <option>Coccus</option>
           <option>Bacillus</option>
           <option>Coccobacillus</option>
@@ -83,12 +87,14 @@ const screens = {
         </select>
         <label>Motility:</label>
         <select id="motility">
+          <option value="">-- Select --</option>
           <option>Non-motile</option>
           <option>Flagellated</option>
           <option>Cytoskeletal gliding</option>
         </select>
         <label>Cell Wall:</label>
         <select id="cellwall">
+          <option value="">-- Select --</option>
           <option>Gram-positive</option>
           <option>Gram-negative</option>
         </select>
@@ -97,12 +103,14 @@ const screens = {
       html += `
         <label>Structure:</label>
         <select id="fungitype">
+          <option value="">-- Select --</option>
           <option>Unicellular</option>
           <option>Multicellular</option>
           <option>Dimorphic</option>
         </select>
         <label>Reproduction:</label>
         <select id="fungirepro">
+          <option value="">-- Select --</option>
           <option>Asexual</option>
           <option>Sexual</option>
           <option>Both</option>
@@ -112,6 +120,7 @@ const screens = {
       html += `
         <label>Body Form:</label>
         <select id="helminthform">
+          <option value="">-- Select --</option>
           <option>Nematode</option>
           <option>Cestode</option>
           <option>Trematode</option>
@@ -159,9 +168,14 @@ function selectType(type) {
 }
 
 function saveTraits() {
-  document.querySelectorAll('select').forEach(sel => {
+  const selects = document.querySelectorAll('select');
+  for (let sel of selects) {
+    if (!sel.value) {
+      alert('Please complete all selections.');
+      return;
+    }
     state.traits[sel.id] = sel.value;
-  });
+  }
   goTo('transmission');
 }
 

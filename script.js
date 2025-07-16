@@ -1,4 +1,4 @@
-// script.js (fixed: added missing traits screen to enable microbe type selection)
+// script.js (fixed: re-enabled back buttons and button functionality across screens)
 
 const app = document.getElementById("app");
 
@@ -40,6 +40,7 @@ const screens = {
       <button onclick="selectType('fungus')">Fungus</button>
       <button onclick="selectType('helminth')">Helminth</button>
       <button onclick="selectType('protozoan')">Protozoan</button>
+      <br><br><button onclick="goTo('welcome')">Back</button>
     `;
   },
 
@@ -118,7 +119,10 @@ const screens = {
       `;
     }
 
-    html += `<button onclick="saveTraits()">Next</button>`;
+    html += `
+      <button onclick="saveTraits()">Next</button>
+      <button onclick="goTo('microbeType')">Back</button>
+    `;
     app.innerHTML = html;
   },
 

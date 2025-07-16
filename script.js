@@ -1,4 +1,4 @@
-// script.js (fixed: ensure Step 2 Next buttons work by adding placeholder transmission screen)
+// script.js (final full version with condition-specific logic and all screens restored)
 
 const app = document.getElementById("app");
 
@@ -34,7 +34,6 @@ const screens = {
   microbeType() {
     app.innerHTML = `
       <h2>Step 1: Choose Microbe Type</h2>
-      <p>If you need a reminder of what anything is, consult your class PowerPoints.</p>
       <button onclick="selectType('virus')">Virus</button>
       <button onclick="selectType('bacterium')">Bacterium</button>
       <button onclick="selectType('fungus')">Fungus</button>
@@ -137,24 +136,70 @@ const screens = {
 
   transmission() {
     app.innerHTML = `
-      <h2>Step 3: Transmission (Placeholder)</h2>
-      <p>This is a placeholder. More logic will go here in future steps.</p>
-      <button onclick="goTo('reflection')">Skip to Symptoms</button>
+      <h2>Step 3: Choose Transmission</h2>
+      <label>Transmission Type:</label>
+      <select id="transmission">
+        <option value="">-- Select --</option>
+        <option>Direct Contact</option>
+        <option>Indirect Contact</option>
+        <option>Droplet</option>
+        <option>Airborne</option>
+        <option>Vector-borne</option>
+        <option>Fecal-Oral</option>
+        <option>Vertical (mother to child)</option>
+      </select>
+      <div id="detail"></div>
+      <button onclick="saveTransmission()">Next</button>
       <button onclick="goTo('traits')">Back</button>
     `;
+    document.getElementById("transmission").addEventListener("change", updateTransmissionDetail);
+  },
+
+  lifeCycle() {
+    let options = `
+      <option value="">-- Select --</option>
+      <option>Simple (single host)</option>
+      <option>Complex (multiple hosts)</option>
+    `;
+    if (state.microbeType === "virus") {
+      options += `
+        <option>Lytic</option>
+        <option>Lysogenic</option>
+      `;
+    } else if (state.microbeType === "bacterium") {
+      options += `
+        <option>Lytic</option>
+      `;
+    }
+    app.innerHTML = `
+      <h2>Step 4: Life Cycle</h2>
+      <select id="lifeCycle">${options}</select>
+      <div id="hostOptions"></div>
+      <button onclick="saveLifeCycle()">Next</button>
+      <button onclick="goTo('transmission')">Back</button>
+    `;
+    document.getElementById("lifeCycle").addEventListener("change", updateHostFields);
+  },
+
+  virulence() {
+    app.innerHTML = `
+      <h2>Step 5: Virulence Factors</h2>
+      <label><input type="checkbox" value="Antimicrobial Resistance"> Antimicrobial Resistance</label><br>
+      <label><input type="checkbox" value="Capsule"> Capsule</label><br>
+      <label><input type="checkbox" value="Enzyme Production"> Enzyme Production</label><br>
+      <label><input type="checkbox" value="Toxin Production"> Toxin Production</label><br>
+      <div id="toxinDetails"></div>
+      <div id="enzymeDetails"></div>
+      <button onclick="saveVirulence()">Next</button>
+      <button onclick="goTo('lifeCycle')">Back</button>
+    `;
+    document.querySelectorAll('input[type=checkbox]').forEach(cb => cb.addEventListener("change", updateVirulenceDetails));
   },
 
   reflection() {
     app.innerHTML = `
-      <h2>Step 6: Predict Symptoms Based on All Traits</h2>
-      <p>Describe how your microbe causes disease and what symptoms result:</p>
+      <h2>Step 6: Predict Symptoms</h2>
       <textarea id="reflection" rows="6"></textarea>
-      <p><strong>Hints:</strong></p>
-      <ul>
-        <li><strong>Transmission:</strong> ${state.transmission} → impacts spread and symptoms</li>
-        <li><strong>Virulence:</strong> ${state.virulenceFactors.join(', ') || 'None'} → affects severity</li>
-        <li><strong>Life Cycle:</strong> ${state.lifeCycle} → ${state.lifeCycle === 'Complex (multiple hosts)' ? 'Consider intermediate and definitive hosts' : 'Simpler host-pathogen interaction'}</li>
-      </ul>
       <button onclick="saveReflection()">Next</button>
       <button onclick="goTo('virulence')">Back</button>
     `;
@@ -166,6 +211,17 @@ const screens = {
       <input type="text" id="microbeName" placeholder="e.g., Evilus microbii">
       <button onclick="saveName()">Finish</button>
       <button onclick="goTo('reflection')">Back</button>
+    `;
+  },
+
+  summary() {
+    const doc = `Microbe Name: ${state.name}\nType: ${state.microbeType}\nTraits: ${JSON.stringify(state.traits)}\nTransmission: ${state.transmission} - ${state.transmissionDetail}\nLife Cycle: ${state.lifeCycle}\nIntermediate Hosts: ${state.intermediateHosts.join(', ')}\nDefinitive Host: ${state.definitiveHost}\nVirulence: ${state.virulenceFactors.join(', ')}\nToxin: ${state.toxinType}\nEnzyme: ${state.enzymeFunction}\nSymptoms: ${state.symptomReflection}`;
+    const blob = new Blob([doc], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    app.innerHTML = `
+      <h2>Microbe Summary</h2>
+      <pre>${doc}</pre>
+      <a href="${url}" download="MyMicrobe.doc">Download Summary</a>
     `;
   }
 };
@@ -179,13 +235,99 @@ function selectType(type) {
 function saveTraits() {
   const selects = document.querySelectorAll('select');
   for (let sel of selects) {
-    if (!sel.value) {
-      alert('Please complete all selections.');
-      return;
-    }
+    if (!sel.value) return alert("Please complete all selections.");
     state.traits[sel.id] = sel.value;
   }
   goTo('transmission');
+}
+
+function updateTransmissionDetail() {
+  const val = document.getElementById("transmission").value;
+  state.transmission = val;
+  const detailDiv = document.getElementById("detail");
+  let html = "";
+  if (val === "Vector-borne") {
+    html += `<label>Vector Type:</label>
+      <select id="transmissionDetail">
+        <option value="">-- Select --</option>
+        <option>Biological Vector</option>
+        <option>Mechanical Vector</option>
+      </select>`;
+  } else if (val === "Indirect Contact") {
+    html += `<label>Fomite Type:</label>
+      <select id="transmissionDetail">
+        <option value="">-- Select --</option>
+        <option>Needles</option>
+        <option>Surfaces</option>
+        <option>Shared Items</option>
+      </select>`;
+  }
+  detailDiv.innerHTML = html;
+}
+
+function saveTransmission() {
+  const t1 = document.getElementById("transmission").value;
+  const t2El = document.getElementById("transmissionDetail");
+  if (!t1) return alert("Please select a transmission type.");
+  state.transmission = t1;
+  state.transmissionDetail = t2El ? t2El.value : '';
+  goTo('lifeCycle');
+}
+
+function updateHostFields() {
+  const lc = document.getElementById("lifeCycle").value;
+  let html = "";
+  if (lc === "Complex (multiple hosts)") {
+    html += `
+      <label>Intermediate Hosts (comma separated):</label><br>
+      <input type="text" id="intermediate">
+      <br><label>Definitive Host:</label><br>
+      <input type="text" id="definitive">
+    `;
+  }
+  document.getElementById("hostOptions").innerHTML = html;
+}
+
+function saveLifeCycle() {
+  const lc = document.getElementById("lifeCycle").value;
+  if (!lc) return alert("Please select a life cycle.");
+  state.lifeCycle = lc;
+  if (lc === "Complex (multiple hosts)") {
+    state.intermediateHosts = document.getElementById("intermediate").value.split(',').map(s => s.trim());
+    state.definitiveHost = document.getElementById("definitive").value.trim();
+  }
+  goTo('virulence');
+}
+
+function updateVirulenceDetails() {
+  const checked = Array.from(document.querySelectorAll('input[type=checkbox]:checked')).map(cb => cb.value);
+  state.virulenceFactors = checked;
+  let toxin = "", enzyme = "";
+  if (checked.includes("Toxin Production")) {
+    toxin = `
+      <label>Toxin Type:</label>
+      <select id="toxinType">
+        <option value="">-- Select --</option>
+        <option>Endotoxin</option>
+        <option>Exotoxin - Cytotoxin</option>
+        <option>Exotoxin - Neurotoxin</option>
+        <option>Exotoxin - Enterotoxin</option>
+      </select>
+    `;
+  }
+  if (checked.includes("Enzyme Production")) {
+    enzyme = `<label>Enzyme Function:</label><input type="text" id="enzymeFunction">`;
+  }
+  document.getElementById("toxinDetails").innerHTML = toxin;
+  document.getElementById("enzymeDetails").innerHTML = enzyme;
+}
+
+function saveVirulence() {
+  const tox = document.getElementById("toxinType");
+  const enz = document.getElementById("enzymeFunction");
+  if (tox) state.toxinType = tox.value;
+  if (enz) state.enzymeFunction = enz.value;
+  goTo('reflection');
 }
 
 function saveReflection() {

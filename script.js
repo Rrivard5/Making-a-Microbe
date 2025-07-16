@@ -1,4 +1,4 @@
-// script.js (fixed step 2 Next buttons, removed protozoan, added default empty dropdown options)
+// script.js (fixed: ensure Step 2 Next buttons work by adding placeholder transmission screen)
 
 const app = document.getElementById("app");
 
@@ -133,6 +133,15 @@ const screens = {
       <button onclick="goTo('microbeType')">Back</button>
     `;
     app.innerHTML = html;
+  },
+
+  transmission() {
+    app.innerHTML = `
+      <h2>Step 3: Transmission (Placeholder)</h2>
+      <p>This is a placeholder. More logic will go here in future steps.</p>
+      <button onclick="goTo('reflection')">Skip to Symptoms</button>
+      <button onclick="goTo('traits')">Back</button>
+    `;
   },
 
   reflection() {

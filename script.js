@@ -18,13 +18,9 @@ let state = {
   currentStep: 0
 };
 
-// Main start function
+// Main start function - FIXED: Removed duplicate definition
 function startApp() {
   console.log("Starting app...");
-  showMicrobeTypeScreen();
-}
-
-function startApp() {
   showMicrobeTypeScreen();
 }
 
@@ -405,6 +401,62 @@ function saveReproduction() {
   state.reproduction = reproduction;
   showAdaptationsScreen();
 }
+
+function showAdaptationsScreen() {
+  state.currentStep = 5;
+  document.getElementById('app').innerHTML = `
+    <div class="progress-bar">
+      <div class="progress-fill" style="width: 83%"></div>
+    </div>
+    <h2>Step 5: Select Adaptations</h2>
+    <p>Choose adaptations that help your microbe survive and cause disease:</p>
+    
+    <div class="checkbox-group">
+      <div class="checkbox-item">
+        <input type="checkbox" id="capsule" value="Capsule formation">
+        <label for="capsule">Capsule formation</label>
+      </div>
+      <div class="checkbox-item">
+        <input type="checkbox" id="biofilm" value="Biofilm production">
+        <label for="biofilm">Biofilm production</label>
+      </div>
+      <div class="checkbox-item">
+        <input type="checkbox" id="spores" value="Spore formation">
+        <label for="spores">Spore formation</label>
+      </div>
+      <div class="checkbox-item">
+        <input type="checkbox" id="resistance" value="Antibiotic resistance">
+        <label for="resistance">Antibiotic resistance</label>
+      </div>
+      <div class="checkbox-item">
+        <input type="checkbox" id="immune" value="Immune evasion">
+        <label for="immune">Immune evasion</label>
+      </div>
+      <div class="checkbox-item">
+        <input type="checkbox" id="mutation" value="High mutation rate">
+        <label for="mutation">High mutation rate</label>
+      </div>
+    </div>
+    
+    <div class="navigation">
+      <button class="secondary" onclick="showReproductionScreen()">← Back</button>
+      <button onclick="saveAdaptations()">Next →</button>
+    </div>
+  `;
+}
+
+function saveAdaptations() {
+  const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+  state.adaptations = Array.from(checkboxes).map(cb => cb.value);
+  
+  if (state.adaptations.length === 0) {
+    alert("Please select at least one adaptation.");
+    return;
+  }
+  
+  showSummaryScreen();
+}
+
 function showSummaryScreen() {
   state.currentStep = 6;
   document.getElementById('app').innerHTML = `
@@ -454,7 +506,6 @@ function showSummaryScreen() {
       <button onclick="resetApp()">🔄 Design Another Microbe</button>
     </div>
   `;
-}
 }
 
 function goHome() {

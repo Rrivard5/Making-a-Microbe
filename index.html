@@ -13,10 +13,25 @@
       <p>Welcome! This interactive app will guide you through designing a pathogenic microbe using concepts from microbiology.</p>
       <p>You'll explore different microbe types, their structural features, transmission methods, life cycles, and virulence factors.</p>
       <p><em>💡 Tip: If you need a reminder of any concept, consult your class PowerPoints or textbook.</em></p>
-      <button onclick="startApp()">🚀 Start Building Your Microbe</button>
+      <button id="startButton" type="button">🚀 Start Building Your Microbe</button>
     </div>
   </div>
 
   <script src="script.js"></script>
+  <script>
+    // Ensure the startApp function is available when the page loads
+    console.log("Script loaded");
+    
+    // Add event listener when page is ready
+    document.addEventListener('DOMContentLoaded', function() {
+      const startButton = document.getElementById('startButton');
+      if (startButton) {
+        startButton.addEventListener('click', function() {
+          console.log("Button clicked!");
+          startApp();
+        });
+      }
+    });
+  </script>
 </body>
 </html>

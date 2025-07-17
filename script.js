@@ -3,6 +3,9 @@ let state = {
   traits: {},
   transmission: '',
   transmissionDetail: '',
+  portalOfEntry: '',
+  reproduction: '',
+  adaptations: [],
   lifeCycle: '',
   intermediateHosts: [],
   definitiveHost: '',
@@ -207,7 +210,7 @@ function showTransmissionScreen() {
   state.currentStep = 3;
   document.getElementById('app').innerHTML = `
     <div class="progress-bar">
-      <div class="progress-fill" style="width: 50%"></div>
+      <div class="progress-fill" style="width: 43%"></div>
     </div>
     <h2>Step 3: Choose Transmission Method</h2>
     <p>How will your microbe spread from host to host?</p>
@@ -223,6 +226,7 @@ function showTransmissionScreen() {
     </div>
     
     <div id="detail"></div>
+    <div id="portal-section"></div>
     
     <div class="navigation">
       <button class="secondary" onclick="showTraitsScreen()">← Back</button>
@@ -235,13 +239,15 @@ function updateTransmissionDetail() {
   const category = document.getElementById("transmission").value;
   state.transmission = category;
   const detailDiv = document.getElementById("detail");
+  const portalDiv = document.getElementById("portal-section");
   let html = "";
+  let portalHtml = "";
 
   if (category === "Contact Transmission") {
     html = `
       <div class="form-group">
         <label for="transmissionDetail">Specific Type:</label>
-        <select id="transmissionDetail">
+        <select id="transmissionDetail" onchange="updatePortalOfEntry()">
           <option value="">-- Select specific type --</option>
           <option value="Direct Contact">Direct Contact</option>
           <option value="Indirect Contact">Indirect Contact</option>
@@ -253,7 +259,7 @@ function updateTransmissionDetail() {
     html = `
       <div class="form-group">
         <label for="transmissionDetail">Specific Type:</label>
-        <select id="transmissionDetail">
+        <select id="transmissionDetail" onchange="updatePortalOfEntry()">
           <option value="">-- Select specific type --</option>
           <option value="Waterborne">Waterborne</option>
           <option value="Foodborne">Foodborne</option>
@@ -266,7 +272,7 @@ function updateTransmissionDetail() {
     html = `
       <div class="form-group">
         <label for="transmissionDetail">Specific Type:</label>
-        <select id="transmissionDetail">
+        <select id="transmissionDetail" onchange="updatePortalOfEntry()">
           <option value="">-- Select specific type --</option>
           <option value="Biological Vector">Biological Vector</option>
           <option value="Mechanical Vector">Mechanical Vector</option>
@@ -276,11 +282,45 @@ function updateTransmissionDetail() {
   }
 
   detailDiv.innerHTML = html;
+  portalDiv.innerHTML = portalHtml;
+}
+
+function updatePortalOfEntry() {
+  const transmissionDetail = document.getElementById("transmissionDetail").value;
+  const portalDiv = document.getElementById("portal-section");
+  let portalOptions = [];
+
+  // Define portal of entry options based on transmission type
+  if (transmissionDetail === "Direct Contact" || transmissionDetail === "Indirect Contact") {
+    portalOptions = ["Skin", "Mucous membranes", "Parenteral route"];
+  } else if (transmissionDetail === "Droplet Transmission" || transmissionDetail === "Airborne") {
+    portalOptions = ["Respiratory tract", "Conjunctiva"];
+  } else if (transmissionDetail === "Waterborne" || transmissionDetail === "Foodborne") {
+    portalOptions = ["Gastrointestinal tract", "Respiratory tract"];
+  } else if (transmissionDetail === "Soilborne") {
+    portalOptions = ["Skin", "Respiratory tract", "Gastrointestinal tract"];
+  } else if (transmissionDetail === "Biological Vector" || transmissionDetail === "Mechanical Vector") {
+    portalOptions = ["Parenteral route", "Skin", "Mucous membranes"];
+  }
+
+  if (portalOptions.length > 0) {
+    const portalHtml = `
+      <div class="form-group">
+        <label for="portalOfEntry">Portal of Entry:</label>
+        <select id="portalOfEntry">
+          <option value="">-- Select portal of entry --</option>
+          ${portalOptions.map(option => `<option value="${option}">${option}</option>`).join('')}
+        </select>
+      </div>
+    `;
+    portalDiv.innerHTML = portalHtml;
+  }
 }
 
 function saveTransmission() {
   const main = document.getElementById("transmission").value;
   const detail = document.getElementById("transmissionDetail");
+  const portal = document.getElementById("portalOfEntry");
   
   if (!main) {
     alert("Please select a transmission category.");
@@ -289,17 +329,77 @@ function saveTransmission() {
   
   state.transmission = main;
   state.transmissionDetail = detail ? detail.value : '';
+  state.portalOfEntry = portal ? portal.value : '';
   
   if (!state.transmissionDetail) {
     alert("Please select a specific transmission type.");
     return;
   }
   
-  showSummaryScreen();
+  if (!state.portalOfEntry) {
+    alert("Please select a portal of entry.");
+    return;
+  }
+  
+  showReproductionScreen();
 }
 
-function showSummaryScreen() {
+function showReproductionScreen() {
   state.currentStep = 4;
+  const type = state.microbeType;
+  let reproductionOptions = [];
+  let description = "";
+
+  // Define reproduction methods based on microbe type
+  if (type === 'virus') {
+    reproductionOptions = ["Lytic cycle", "Lysogenic cycle"];
+    description = "Viruses reproduce by hijacking host cellular machinery. Choose the replication strategy:";
+  } else if (type === 'bacterium') {
+    reproductionOptions = ["Binary fission", "Conjugation", "Transformation", "Transduction"];
+    description = "Bacteria reproduce through various methods. Choose the primary reproduction method:";
+  } else if (type === 'fungus') {
+    reproductionOptions = ["Budding", "Fragmentation", "Spore formation", "Sexual reproduction"];
+    description = "Fungi can reproduce through multiple methods. Choose the primary reproduction strategy:";
+  } else if (type === 'helminth') {
+    reproductionOptions = ["Sexual reproduction", "Asexual reproduction", "Parthenogenesis"];
+    description = "Helminths use various reproductive strategies. Choose the reproduction method:";
+  }
+
+  document.getElementById('app').innerHTML = `
+    <div class="progress-bar">
+      <div class="progress-fill" style="width: 57%"></div>
+    </div>
+    <h2>Step 4: Select Reproduction Method</h2>
+    <p>${description}</p>
+    
+    <div class="form-group">
+      <label for="reproduction">Reproduction Method:</label>
+      <select id="reproduction">
+        <option value="">-- Select reproduction method --</option>
+        ${reproductionOptions.map(option => `<option value="${option}">${option}</option>`).join('')}
+      </select>
+    </div>
+    
+    <div class="navigation">
+      <button class="secondary" onclick="showTransmissionScreen()">← Back</button>
+      <button onclick="saveReproduction()">Next →</button>
+    </div>
+  `;
+}
+
+function saveReproduction() {
+  const reproduction = document.getElementById("reproduction").value;
+  
+  if (!reproduction) {
+    alert("Please select a reproduction method.");
+    return;
+  }
+  
+  state.reproduction = reproduction;
+  showAdaptationsScreen();
+}
+function showSummaryScreen() {
+  state.currentStep = 6;
   document.getElementById('app').innerHTML = `
     <div class="progress-bar">
       <div class="progress-fill" style="width: 100%"></div>
@@ -325,13 +425,29 @@ function showSummaryScreen() {
         <span class="summary-label">Transmission:</span>
         <span class="summary-value">${state.transmission} - ${state.transmissionDetail}</span>
       </div>
+      
+      <div class="summary-item">
+        <span class="summary-label">Portal of Entry:</span>
+        <span class="summary-value">${state.portalOfEntry}</span>
+      </div>
+      
+      <div class="summary-item">
+        <span class="summary-label">Reproduction:</span>
+        <span class="summary-value">${state.reproduction}</span>
+      </div>
+      
+      <div class="summary-item">
+        <span class="summary-label">Adaptations:</span>
+        <span class="summary-value">${state.adaptations.join(', ')}</span>
+      </div>
     </div>
     
     <div class="navigation">
-      <button class="secondary" onclick="showTransmissionScreen()">← Back to Edit</button>
+      <button class="secondary" onclick="showAdaptationsScreen()">← Back to Edit</button>
       <button onclick="resetApp()">🔄 Design Another Microbe</button>
     </div>
   `;
+}
 }
 
 function goHome() {
@@ -344,6 +460,9 @@ function resetApp() {
     traits: {},
     transmission: '',
     transmissionDetail: '',
+    portalOfEntry: '',
+    reproduction: '',
+    adaptations: [],
     lifeCycle: '',
     intermediateHosts: [],
     definitiveHost: '',

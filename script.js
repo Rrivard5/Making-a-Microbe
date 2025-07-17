@@ -135,18 +135,41 @@ const screens = {
   },
 
   transmission() {
+   // script.js (updated transmission step with nested categories)
+
+const app = document.getElementById("app");
+
+let state = {
+  microbeType: null,
+  traits: {},
+  transmission: '',
+  transmissionDetail: '',
+  lifeCycle: '',
+  intermediateHosts: [],
+  definitiveHost: '',
+  virulenceFactors: [],
+  toxinType: '',
+  enzymeFunction: '',
+  symptomReflection: '',
+  name: ''
+};
+
+function goTo(screen) {
+  screens[screen]();
+}
+
+const screens = {
+  // ... other screens remain unchanged ...
+
+  transmission() {
     app.innerHTML = `
       <h2>Step 3: Choose Transmission</h2>
-      <label>Transmission Type:</label>
+      <label>Transmission Category:</label>
       <select id="transmission">
         <option value="">-- Select --</option>
-        <option>Direct Contact</option>
-        <option>Indirect Contact</option>
-        <option>Droplet</option>
-        <option>Airborne</option>
-        <option>Vector-borne</option>
-        <option>Fecal-Oral</option>
-        <option>Vertical (mother to child)</option>
+        <option>Contact Transmission</option>
+        <option>Vehicle Transmission</option>
+        <option>Vector-borne Transmission</option>
       </select>
       <div id="detail"></div>
       <button onclick="saveTransmission()">Next</button>
@@ -154,6 +177,54 @@ const screens = {
     `;
     document.getElementById("transmission").addEventListener("change", updateTransmissionDetail);
   },
+
+  // ... other screens remain unchanged ...
+};
+
+function updateTransmissionDetail() {
+  const category = document.getElementById("transmission").value;
+  state.transmission = category;
+  const detailDiv = document.getElementById("detail");
+  let html = "";
+
+  if (category === "Contact Transmission") {
+    html += `<label>Specific Type:</label>
+      <select id="transmissionDetail">
+        <option value="">-- Select --</option>
+        <option>Direct Contact</option>
+        <option>Indirect Contact</option>
+        <option>Droplet Transmission</option>
+      </select>`;
+  } else if (category === "Vehicle Transmission") {
+    html += `<label>Specific Type:</label>
+      <select id="transmissionDetail">
+        <option value="">-- Select --</option>
+        <option>Waterborne</option>
+        <option>Foodborne</option>
+        <option>Airborne</option>
+        <option>Soilborne</option>
+      </select>`;
+  } else if (category === "Vector-borne Transmission") {
+    html += `<label>Specific Type:</label>
+      <select id="transmissionDetail">
+        <option value="">-- Select --</option>
+        <option>Biological Vector</option>
+        <option>Mechanical Vector</option>
+      </select>`;
+  }
+
+  detailDiv.innerHTML = html;
+}
+
+function saveTransmission() {
+  const main = document.getElementById("transmission").value;
+  const detail = document.getElementById("transmissionDetail");
+  if (!main) return alert("Please select a transmission category.");
+  state.transmission = main;
+  state.transmissionDetail = detail ? detail.value : '';
+  if (!state.transmissionDetail) return alert("Please select a specific transmission type.");
+  goTo('lifeCycle');
+}
 
   lifeCycle() {
     let options = `

@@ -1,38 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Make Your Own Microbe</title>
-  <link rel="stylesheet" href="style.css">
-
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .download-btn { padding: 10px 20px; font-size: 1rem; margin-top: 20px; }
+    .summary-card { border: 1px solid #ccc; padding: 20px; margin-top: 20px; }
+  </style>
 </head>
 <body>
-  <div id="app">
-    <div class="welcome-content">
-      <h1>🦠 Make Your Own Microbe</h1>
-      <p>Welcome! This interactive app will guide you through designing a pathogenic microbe using concepts from microbiology.</p>
-      <p>You'll explore different microbe types, their structural features, transmission methods, life cycles, and virulence factors.</p>
-      <p><em>💡 Tip: If you need a reminder of any concept, consult your class PowerPoints or textbook.</em></p>
-      <button id="startButton" type="button">🚀 Start Building Your Microbe</button>
-    </div>
-  </div>
+  <h1>🎉 Your Microbe Design Complete!</h1>
 
-  <script src="script.js"></script>
+  <div class="summary-card" id="summary"></div>
+
+  <button id="downloadBtn" class="download-btn">📄 Download Word Document</button>
+
   <script>
-    // Ensure the startApp function is available when the page loads
-    console.log("Script loaded");
-    
-    // Add event listener when page is ready
-    document.addEventListener('DOMContentLoaded', function() {
-      const startButton = document.getElementById('startButton');
-      if (startButton) {
-        startButton.addEventListener('click', function() {
-          console.log("Button clicked!");
-          startApp();
-        });
+    const state = {
+      name: "Bacterium deadlicus",
+      microbeType: "Bacterium",
+      traits: {
+        shape: "Bacillus",
+        motility: "Flagellated",
+        cellwall: "Gram-negative"
+      },
+      transmission: "Vehicle Transmission",
+      transmissionDetail: "Foodborne",
+      portalOfEntry: "Gastrointestinal tract",
+      reproduction: "Binary fission",
+      adaptations: ["Capsule formation", "Antibiotic resistance", "Toxin secretion", "Enzyme production"],
+      toxinType: "Exotoxin",
+      toxinSubtype: "Neurotoxin",
+      customEnzyme: "Cellulase",
+      enzymeFunction: "Breaks down plant cell walls",
+      symptoms: "Vomiting, diarrhea, and muscle paralysis"
+    };
+
+    function renderSummary() {
+      let adaptationText = state.adaptations.join(', ');
+      if (state.toxinType) {
+        let toxinDisplay = state.toxinType;
+        if (state.toxinSubtype) {
+          toxinDisplay += ` (${state.toxinSubtype})`;
+        }
+        adaptationText = adaptationText.replace('Toxin secretion', `Toxin secretion (${toxinDisplay})`);
       }
-    });
+      if (state.customEnzyme) {
+        adaptationText = adaptationText.replace('Enzyme production', `Enzyme production (${state.customEnzyme}: ${state.enzymeFunction})`);
+      }
+
+      document.getElementById('summary').innerHTML = `
+        <h3>${state.name}</h3>
+        <p><strong>Type:</strong> ${state.microbeType}</p>
+        ${Object.entries(state.traits).map(([k, v]) => `<p><strong>${k}:</strong> ${v}</p>`).join('')}
+        <p><strong>Transmission:</strong> ${state.transmission} - ${state.transmissionDetail}</p>
+        <p><strong>Portal of Entry:</strong> ${state.portalOfEntry}</p>
+        <p><strong>Reproduction:</strong> ${state.reproduction}</p>
+        <p><strong>Adaptations:</strong> ${adaptationText}</p>
+        <p><strong>Symptoms:</strong> ${state.symptoms}</p>
+      `;
+    }
+
+    function downloadWordDocument() {
+      try {
+        let adaptationText = state.adaptations.join(', ');
+        if (state.toxinType) {
+          let toxinDisplay = state.toxinType;
+          if (state.toxinSubtype) {
+            toxinDisplay += ` (${state.toxinSubtype})`;
+          }
+          adaptationText = adaptationText.replace('Toxin secretion', `Toxin secretion (${toxinDisplay})`);
+        }
+        if (state.customEnzyme) {
+          adaptationText = adaptationText.replace('Enzyme production', `Enzyme production (${state.customEnzyme}: ${state.enzymeFunction})`);
+        }
+
+        const rtfContent = `{\\rtf1\\ansi\\deff0 {\\fonttbl {\\f0 Times New Roman;}}
+\\f0\\fs24 
+\\qc\\b\\fs32 Make Your Own Microbe - Design Summary\\b0\\fs24\\par
+\\par
+\\par
+Student Name: _________________________    Date: _________________________\\par
+\\par
+\\par
+\\b\\fs28 Microbe Name: ${state.name}\\b0\\fs24\\par
+\\par
+\\b\\fs20 Basic Characteristics\\b0\\par
+\\par
+Microbe Type: ${state.microbeType}\\par
+${Object.entries(state.traits).map(([k, v]) => `${k.charAt(0).toUpperCase() + k.slice(1)}: ${v}\\par`).join('')}
+\\par
+\\b\\fs20 Transmission and Entry\\b0\\par
+\\par
+Transmission Method: ${state.transmission} - ${state.transmissionDetail}\\par
+Portal of Entry: ${state.portalOfEntry}\\par
+\\par
+\\b\\fs20 Reproduction and Survival\\b0\\par
+\\par
+Reproduction Method: ${state.reproduction}\\par
+Adaptations: ${adaptationText}\\par
+\\par
+\\b\\fs20 Disease Manifestation\\b0\\par
+\\par
+Predicted Symptoms: ${state.symptoms}\\par
+\\par
+\\par
+\\b\\fs20 Instructor Comments:\\b0\\par
+\\par
+\\par
+\\par
+\\par}`;
+
+        const blob = new Blob([rtfContent], { type: 'application/msword' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${state.name.replace(/[^a-zA-Z0-9]/g, '_')}_Microbe_Design.doc`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        console.log("Download triggered.");
+      } catch (e) {
+        console.error("Download failed:", e);
+        alert("Sorry, the download did not work. Try copying the summary manually.");
+      }
+    }
+
+    document.getElementById("downloadBtn").addEventListener("click", downloadWordDocument);
+
+    renderSummary();
   </script>
 </body>
 </html>

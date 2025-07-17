@@ -1,3 +1,4 @@
+// Global state object
 let state = {
   microbeType: null,
   traits: {},
@@ -17,7 +18,9 @@ let state = {
   currentStep: 0
 };
 
+// Main start function
 function startApp() {
+  console.log("Starting app...");
   showMicrobeTypeScreen();
 }
 

@@ -21,6 +21,10 @@ function startApp() {
   showMicrobeTypeScreen();
 }
 
+function startApp() {
+  showMicrobeTypeScreen();
+}
+
 function showMicrobeTypeScreen() {
   state.currentStep = 1;
   document.getElementById('app').innerHTML = `

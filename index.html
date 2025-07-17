@@ -5,36 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Make Your Own Microbe</title>
   <link rel="stylesheet" href="style.css">
-  <style>
-    .tooltip {
-      position: relative;
-      cursor: pointer;
-      border-bottom: 1px dotted #000;
-    }
-
-    .tooltip .tooltiptext {
-      visibility: hidden;
-      width: 250px;
-      background-color: #f9f9f9;
-      color: #000;
-      text-align: left;
-      border-radius: 5px;
-      padding: 10px;
-      position: absolute;
-      z-index: 1;
-      bottom: 125%;
-      left: 50%;
-      margin-left: -125px;
-      border: 1px solid #ccc;
-    }
-
-    .tooltip:hover .tooltiptext {
-      visibility: visible;
-    }
-  </style>
 </head>
 <body>
-  <div id="app"></div>
+  <div id="app">
+    <div class="welcome-content">
+      <h1>🦠 Make Your Own Microbe</h1>
+      <p>Welcome! This interactive app will guide you through designing a pathogenic microbe using concepts from microbiology.</p>
+      <p>You'll explore different microbe types, their structural features, transmission methods, life cycles, and virulence factors.</p>
+      <p><em>💡 Tip: If you need a reminder of any concept, consult your class PowerPoints or textbook.</em></p>
+      <button onclick="startApp()">🚀 Start Building Your Microbe</button>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>

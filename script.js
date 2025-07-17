@@ -7,18 +7,15 @@ let state = {
   portalOfEntry: '',
   reproduction: '',
   adaptations: [],
-  lifeCycle: '',
-  intermediateHosts: [],
-  definitiveHost: '',
-  virulenceFactors: [],
   toxinType: '',
+  customEnzyme: '',
   enzymeFunction: '',
-  symptomReflection: '',
+  symptoms: '',
   name: '',
   currentStep: 0
 };
 
-// Main start function - FIXED: Removed duplicate definition
+// Main start function
 function startApp() {
   console.log("Starting app...");
   showMicrobeTypeScreen();
@@ -28,7 +25,7 @@ function showMicrobeTypeScreen() {
   state.currentStep = 1;
   document.getElementById('app').innerHTML = `
     <div class="progress-bar">
-      <div class="progress-fill" style="width: 17%"></div>
+      <div class="progress-fill" style="width: 14%"></div>
     </div>
     <h2>Step 1: Choose Your Microbe Type</h2>
     <p>Select the type of microorganism you want to design. Each has unique characteristics and pathogenic potential.</p>
@@ -75,7 +72,7 @@ function showTraitsScreen() {
   const type = state.microbeType;
   let html = `
     <div class="progress-bar">
-      <div class="progress-fill" style="width: 30%"></div>
+      <div class="progress-fill" style="width: 28%"></div>
     </div>
     <h2>Step 2: Select Structural Traits</h2>
     <p>Choose the structural characteristics that will define your ${type}'s biology and pathogenic potential.</p>
@@ -213,7 +210,7 @@ function showTransmissionScreen() {
   state.currentStep = 3;
   document.getElementById('app').innerHTML = `
     <div class="progress-bar">
-      <div class="progress-fill" style="width: 50%"></div>
+      <div class="progress-fill" style="width: 42%"></div>
     </div>
     <h2>Step 3: Choose Transmission Method</h2>
     <p>How will your microbe spread from host to host?</p>
@@ -244,7 +241,6 @@ function updateTransmissionDetail() {
   const detailDiv = document.getElementById("detail");
   const portalDiv = document.getElementById("portal-section");
   let html = "";
-  let portalHtml = "";
 
   if (category === "Contact Transmission") {
     html = `
@@ -285,39 +281,29 @@ function updateTransmissionDetail() {
   }
 
   detailDiv.innerHTML = html;
-  portalDiv.innerHTML = portalHtml;
+  portalDiv.innerHTML = "";
 }
 
 function updatePortalOfEntry() {
   const transmissionDetail = document.getElementById("transmissionDetail").value;
   const portalDiv = document.getElementById("portal-section");
-  let portalOptions = [];
-
-  // Define portal of entry options based on transmission type
-  if (transmissionDetail === "Direct Contact" || transmissionDetail === "Indirect Contact") {
-    portalOptions = ["Skin", "Mucous membranes", "Parenteral route"];
-  } else if (transmissionDetail === "Droplet Transmission" || transmissionDetail === "Airborne") {
-    portalOptions = ["Respiratory tract", "Conjunctiva"];
-  } else if (transmissionDetail === "Waterborne" || transmissionDetail === "Foodborne") {
-    portalOptions = ["Gastrointestinal tract", "Respiratory tract"];
-  } else if (transmissionDetail === "Soilborne") {
-    portalOptions = ["Skin", "Respiratory tract", "Gastrointestinal tract"];
-  } else if (transmissionDetail === "Biological Vector" || transmissionDetail === "Mechanical Vector") {
-    portalOptions = ["Parenteral route", "Skin", "Mucous membranes"];
+  let portalOptions = ["Skin", "Respiratory tract", "Gastrointestinal tract", "Genitourinary tract"];
+  
+  // Add wound option for direct contact and biological vector
+  if (transmissionDetail === "Direct Contact" || transmissionDetail === "Biological Vector") {
+    portalOptions.push("Wound");
   }
 
-  if (portalOptions.length > 0) {
-    const portalHtml = `
-      <div class="form-group">
-        <label for="portalOfEntry">Portal of Entry:</label>
-        <select id="portalOfEntry">
-          <option value="">-- Select portal of entry --</option>
-          ${portalOptions.map(option => `<option value="${option}">${option}</option>`).join('')}
-        </select>
-      </div>
-    `;
-    portalDiv.innerHTML = portalHtml;
-  }
+  const portalHtml = `
+    <div class="form-group">
+      <label for="portalOfEntry">Portal of Entry:</label>
+      <select id="portalOfEntry">
+        <option value="">-- Select portal of entry --</option>
+        ${portalOptions.map(option => `<option value="${option}">${option}</option>`).join('')}
+      </select>
+    </div>
+  `;
+  portalDiv.innerHTML = portalHtml;
 }
 
 function saveTransmission() {
@@ -370,7 +356,7 @@ function showReproductionScreen() {
 
   document.getElementById('app').innerHTML = `
     <div class="progress-bar">
-      <div class="progress-fill" style="width: 67%"></div>
+      <div class="progress-fill" style="width: 56%"></div>
     </div>
     <h2>Step 4: Select Reproduction Method</h2>
     <p>${description}</p>
@@ -404,37 +390,91 @@ function saveReproduction() {
 
 function showAdaptationsScreen() {
   state.currentStep = 5;
+  const type = state.microbeType;
+  
+  // Define adaptations based on microbe type
+  let adaptationOptions = [];
+  
+  if (type === 'virus') {
+    adaptationOptions = [
+      { id: "capsule", value: "Capsule formation", label: "Capsule formation" },
+      { id: "biofilm", value: "Biofilm production", label: "Biofilm production" },
+      { id: "resistance", value: "Antiviral resistance", label: "Antiviral resistance" },
+      { id: "immune", value: "Immune evasion", label: "Immune evasion" },
+      { id: "mutation", value: "High mutation rate", label: "High mutation rate" },
+      { id: "toxin", value: "Toxin secretion", label: "Toxin secretion" },
+      { id: "enzyme", value: "Enzyme production", label: "Enzyme production" }
+    ];
+  } else if (type === 'bacterium') {
+    adaptationOptions = [
+      { id: "capsule", value: "Capsule formation", label: "Capsule formation" },
+      { id: "biofilm", value: "Biofilm production", label: "Biofilm production" },
+      { id: "spores", value: "Spore formation", label: "Spore formation" },
+      { id: "resistance", value: "Antibiotic resistance", label: "Antibiotic resistance" },
+      { id: "immune", value: "Immune evasion", label: "Immune evasion" },
+      { id: "mutation", value: "High mutation rate", label: "High mutation rate" },
+      { id: "toxin", value: "Toxin secretion", label: "Toxin secretion" },
+      { id: "enzyme", value: "Enzyme production", label: "Enzyme production" }
+    ];
+  } else if (type === 'fungus') {
+    adaptationOptions = [
+      { id: "capsule", value: "Capsule formation", label: "Capsule formation" },
+      { id: "biofilm", value: "Biofilm production", label: "Biofilm production" },
+      { id: "spores", value: "Spore formation", label: "Spore formation" },
+      { id: "resistance", value: "Antifungal resistance", label: "Antifungal resistance" },
+      { id: "immune", value: "Immune evasion", label: "Immune evasion" },
+      { id: "toxin", value: "Toxin secretion", label: "Toxin secretion" },
+      { id: "enzyme", value: "Enzyme production", label: "Enzyme production" }
+    ];
+  } else if (type === 'helminth') {
+    adaptationOptions = [
+      { id: "capsule", value: "Protective coating", label: "Protective coating" },
+      { id: "resistance", value: "Drug resistance", label: "Drug resistance" },
+      { id: "immune", value: "Immune evasion", label: "Immune evasion" },
+      { id: "toxin", value: "Toxin secretion", label: "Toxin secretion" },
+      { id: "enzyme", value: "Enzyme production", label: "Enzyme production" }
+    ];
+  }
+  
   document.getElementById('app').innerHTML = `
     <div class="progress-bar">
-      <div class="progress-fill" style="width: 83%"></div>
+      <div class="progress-fill" style="width: 70%"></div>
     </div>
     <h2>Step 5: Select Adaptations</h2>
     <p>Choose adaptations that help your microbe survive and cause disease:</p>
     
     <div class="checkbox-group">
-      <div class="checkbox-item">
-        <input type="checkbox" id="capsule" value="Capsule formation">
-        <label for="capsule">Capsule formation</label>
+      ${adaptationOptions.map(option => `
+        <div class="checkbox-item">
+          <input type="checkbox" id="${option.id}" value="${option.value}" onchange="toggleAdaptationDetails('${option.id}')">
+          <label for="${option.id}">${option.label}</label>
+        </div>
+      `).join('')}
+    </div>
+    
+    <div id="toxin-details" class="hidden">
+      <div class="form-group">
+        <label for="toxinType">Type of Toxin:</label>
+        <select id="toxinType">
+          <option value="">-- Select toxin type --</option>
+          <option value="Exotoxin">Exotoxin</option>
+          <option value="Endotoxin">Endotoxin</option>
+          <option value="Enterotoxin">Enterotoxin</option>
+          <option value="Neurotoxin">Neurotoxin</option>
+          <option value="Cytotoxin">Cytotoxin</option>
+          <option value="Hemotoxin">Hemotoxin</option>
+        </select>
       </div>
-      <div class="checkbox-item">
-        <input type="checkbox" id="biofilm" value="Biofilm production">
-        <label for="biofilm">Biofilm production</label>
+    </div>
+    
+    <div id="enzyme-details" class="hidden">
+      <div class="form-group">
+        <label for="customEnzyme">Name your enzyme:</label>
+        <input type="text" id="customEnzyme" placeholder="e.g., Tissuelysin, Cellulase, etc.">
       </div>
-      <div class="checkbox-item">
-        <input type="checkbox" id="spores" value="Spore formation">
-        <label for="spores">Spore formation</label>
-      </div>
-      <div class="checkbox-item">
-        <input type="checkbox" id="resistance" value="Antibiotic resistance">
-        <label for="resistance">Antibiotic resistance</label>
-      </div>
-      <div class="checkbox-item">
-        <input type="checkbox" id="immune" value="Immune evasion">
-        <label for="immune">Immune evasion</label>
-      </div>
-      <div class="checkbox-item">
-        <input type="checkbox" id="mutation" value="High mutation rate">
-        <label for="mutation">High mutation rate</label>
+      <div class="form-group">
+        <label for="enzymeFunction">What does your enzyme do?</label>
+        <textarea id="enzymeFunction" placeholder="Describe the function of your enzyme (e.g., breaks down cell walls, degrades tissue, etc.)" rows="3"></textarea>
       </div>
     </div>
     
@@ -443,6 +483,31 @@ function showAdaptationsScreen() {
       <button onclick="saveAdaptations()">Next →</button>
     </div>
   `;
+}
+
+function toggleAdaptationDetails(adaptationId) {
+  const checkbox = document.getElementById(adaptationId);
+  const toxinDetails = document.getElementById('toxin-details');
+  const enzymeDetails = document.getElementById('enzyme-details');
+  
+  if (adaptationId === 'toxin') {
+    if (checkbox.checked) {
+      toxinDetails.classList.remove('hidden');
+    } else {
+      toxinDetails.classList.add('hidden');
+      document.getElementById('toxinType').value = '';
+    }
+  }
+  
+  if (adaptationId === 'enzyme') {
+    if (checkbox.checked) {
+      enzymeDetails.classList.remove('hidden');
+    } else {
+      enzymeDetails.classList.add('hidden');
+      document.getElementById('customEnzyme').value = '';
+      document.getElementById('enzymeFunction').value = '';
+    }
+  }
 }
 
 function saveAdaptations() {
@@ -454,11 +519,113 @@ function saveAdaptations() {
     return;
   }
   
+  // Save toxin details if selected
+  const toxinCheckbox = document.getElementById('toxin');
+  if (toxinCheckbox && toxinCheckbox.checked) {
+    const toxinType = document.getElementById('toxinType').value;
+    if (!toxinType) {
+      alert("Please select a toxin type.");
+      return;
+    }
+    state.toxinType = toxinType;
+  }
+  
+  // Save enzyme details if selected
+  const enzymeCheckbox = document.getElementById('enzyme');
+  if (enzymeCheckbox && enzymeCheckbox.checked) {
+    const customEnzyme = document.getElementById('customEnzyme').value.trim();
+    const enzymeFunction = document.getElementById('enzymeFunction').value.trim();
+    if (!customEnzyme || !enzymeFunction) {
+      alert("Please provide both an enzyme name and its function.");
+      return;
+    }
+    state.customEnzyme = customEnzyme;
+    state.enzymeFunction = enzymeFunction;
+  }
+  
+  showSymptomsScreen();
+}
+
+function showSymptomsScreen() {
+  state.currentStep = 6;
+  document.getElementById('app').innerHTML = `
+    <div class="progress-bar">
+      <div class="progress-fill" style="width: 84%"></div>
+    </div>
+    <h2>Step 6: Predict Symptoms</h2>
+    <p>Based on your microbe's characteristics, what symptoms do you think it would cause in humans?</p>
+    <p><em>Consider your microbe's portal of entry, adaptations, toxins, and enzymes when making your prediction.</em></p>
+    
+    <div class="form-group">
+      <label for="symptoms">Predicted Symptoms:</label>
+      <textarea id="symptoms" placeholder="Describe the symptoms you think your microbe would cause (e.g., fever, nausea, skin lesions, respiratory distress, etc.)" rows="5"></textarea>
+    </div>
+    
+    <div class="navigation">
+      <button class="secondary" onclick="showAdaptationsScreen()">← Back</button>
+      <button onclick="saveSymptoms()">Next →</button>
+    </div>
+  `;
+}
+
+function saveSymptoms() {
+  const symptoms = document.getElementById('symptoms').value.trim();
+  
+  if (!symptoms) {
+    alert("Please describe the predicted symptoms.");
+    return;
+  }
+  
+  state.symptoms = symptoms;
+  showNamingScreen();
+}
+
+function showNamingScreen() {
+  state.currentStep = 7;
+  document.getElementById('app').innerHTML = `
+    <div class="progress-bar">
+      <div class="progress-fill" style="width: 100%"></div>
+    </div>
+    <h2>Step 7: Name Your Microbe</h2>
+    <p>Give your microbe a scientific name! You can be creative or follow scientific naming conventions.</p>
+    <p><em>Examples: Bacterium deadlicus, Virus terrifyensis, Fungus nasticus</em></p>
+    
+    <div class="form-group">
+      <label for="microbeName">Microbe Name:</label>
+      <input type="text" id="microbeName" placeholder="Enter your microbe's name">
+    </div>
+    
+    <div class="navigation">
+      <button class="secondary" onclick="showSymptomsScreen()">← Back</button>
+      <button onclick="saveName()">Complete Design →</button>
+    </div>
+  `;
+}
+
+function saveName() {
+  const name = document.getElementById('microbeName').value.trim();
+  
+  if (!name) {
+    alert("Please give your microbe a name.");
+    return;
+  }
+  
+  state.name = name;
   showSummaryScreen();
 }
 
 function showSummaryScreen() {
-  state.currentStep = 6;
+  state.currentStep = 8;
+  
+  // Create adaptation display text
+  let adaptationText = state.adaptations.join(', ');
+  if (state.toxinType) {
+    adaptationText = adaptationText.replace('Toxin secretion', `Toxin secretion (${state.toxinType})`);
+  }
+  if (state.customEnzyme) {
+    adaptationText = adaptationText.replace('Enzyme production', `Enzyme production (${state.customEnzyme}: ${state.enzymeFunction})`);
+  }
+  
   document.getElementById('app').innerHTML = `
     <div class="progress-bar">
       <div class="progress-fill" style="width: 100%"></div>
@@ -466,7 +633,7 @@ function showSummaryScreen() {
     <h1>🎉 Your Microbe Design Complete!</h1>
     
     <div class="summary-card">
-      <h3>Your Microbe Summary</h3>
+      <h3>${state.name}</h3>
       
       <div class="summary-item">
         <span class="summary-label">Type:</span>
@@ -497,15 +664,142 @@ function showSummaryScreen() {
       
       <div class="summary-item">
         <span class="summary-label">Adaptations:</span>
-        <span class="summary-value">${state.adaptations.join(', ')}</span>
+        <span class="summary-value">${adaptationText}</span>
+      </div>
+      
+      <div class="summary-item">
+        <span class="summary-label">Predicted Symptoms:</span>
+        <span class="summary-value">${state.symptoms}</span>
       </div>
     </div>
     
+    <div class="download-section">
+      <button onclick="downloadWordDocument()" class="download-btn">📄 Download Word Document</button>
+      <p><em>Download your microbe design as a Word document to email to your instructor.</em></p>
+    </div>
+    
     <div class="navigation">
-      <button class="secondary" onclick="showAdaptationsScreen()">← Back to Edit</button>
+      <button class="secondary" onclick="showNamingScreen()">← Back to Edit</button>
       <button onclick="resetApp()">🔄 Design Another Microbe</button>
     </div>
   `;
+}
+
+async function downloadWordDocument() {
+  try {
+    // Create adaptation text for document
+    let adaptationText = state.adaptations.join(', ');
+    if (state.toxinType) {
+      adaptationText = adaptationText.replace('Toxin secretion', `Toxin secretion (${state.toxinType})`);
+    }
+    if (state.customEnzyme) {
+      adaptationText = adaptationText.replace('Enzyme production', `Enzyme production (${state.customEnzyme}: ${state.enzymeFunction})`);
+    }
+
+    const doc = new docx.Document({
+      sections: [{
+        properties: {},
+        children: [
+          new docx.Paragraph({
+            text: "Make Your Own Microbe - Design Summary",
+            heading: docx.HeadingLevel.TITLE,
+            alignment: docx.AlignmentType.CENTER,
+          }),
+          new docx.Paragraph({
+            text: "",
+            spacing: { after: 200 },
+          }),
+          new docx.Paragraph({
+            text: `Student Name: _________________________    Date: _________________________`,
+            spacing: { after: 200 },
+          }),
+          new docx.Paragraph({
+            text: "",
+            spacing: { after: 200 },
+          }),
+          new docx.Paragraph({
+            text: `Microbe Name: ${state.name}`,
+            heading: docx.HeadingLevel.HEADING_1,
+            spacing: { after: 200 },
+          }),
+          new docx.Paragraph({
+            text: "Basic Characteristics",
+            heading: docx.HeadingLevel.HEADING_2,
+            spacing: { after: 100 },
+          }),
+          new docx.Paragraph({
+            text: `Microbe Type: ${state.microbeType}`,
+            spacing: { after: 100 },
+          }),
+          ...Object.entries(state.traits).map(([key, value]) =>
+            new docx.Paragraph({
+              text: `${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`,
+              spacing: { after: 100 },
+            })
+          ),
+          new docx.Paragraph({
+            text: "Transmission and Entry",
+            heading: docx.HeadingLevel.HEADING_2,
+            spacing: { after: 100, before: 200 },
+          }),
+          new docx.Paragraph({
+            text: `Transmission Method: ${state.transmission} - ${state.transmissionDetail}`,
+            spacing: { after: 100 },
+          }),
+          new docx.Paragraph({
+            text: `Portal of Entry: ${state.portalOfEntry}`,
+            spacing: { after: 100 },
+          }),
+          new docx.Paragraph({
+            text: "Reproduction and Survival",
+            heading: docx.HeadingLevel.HEADING_2,
+            spacing: { after: 100, before: 200 },
+          }),
+          new docx.Paragraph({
+            text: `Reproduction Method: ${state.reproduction}`,
+            spacing: { after: 100 },
+          }),
+          new docx.Paragraph({
+            text: `Adaptations: ${adaptationText}`,
+            spacing: { after: 100 },
+          }),
+          new docx.Paragraph({
+            text: "Disease Manifestation",
+            heading: docx.HeadingLevel.HEADING_2,
+            spacing: { after: 100, before: 200 },
+          }),
+          new docx.Paragraph({
+            text: `Predicted Symptoms: ${state.symptoms}`,
+            spacing: { after: 200 },
+          }),
+          new docx.Paragraph({
+            text: "Instructor Comments:",
+            heading: docx.HeadingLevel.HEADING_2,
+            spacing: { after: 100, before: 300 },
+          }),
+          new docx.Paragraph({
+            text: "",
+            spacing: { after: 300 },
+          }),
+          new docx.Paragraph({
+            text: "",
+            spacing: { after: 300 },
+          }),
+          new docx.Paragraph({
+            text: "",
+            spacing: { after: 300 },
+          }),
+        ],
+      }],
+    });
+
+    const blob = await docx.Packer.toBlob(doc);
+    saveAs(blob, `${state.name.replace(/[^a-zA-Z0-9]/g, '_')}_Microbe_Design.docx`);
+    
+  } catch (error) {
+    console.error('Error creating document:', error);
+    alert('There was an error creating the document. Please try again.');
+  }
 }
 
 function goHome() {
@@ -521,13 +815,10 @@ function resetApp() {
     portalOfEntry: '',
     reproduction: '',
     adaptations: [],
-    lifeCycle: '',
-    intermediateHosts: [],
-    definitiveHost: '',
-    virulenceFactors: [],
     toxinType: '',
+    customEnzyme: '',
     enzymeFunction: '',
-    symptomReflection: '',
+    symptoms: '',
     name: '',
     currentStep: 0
   };

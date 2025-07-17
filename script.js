@@ -726,9 +726,20 @@ function showSummaryScreen() {
 
 async function downloadWordDocument() {
   try {
+    // Wait for libraries to load
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     // Check if docx is available
     if (typeof docx === 'undefined') {
+      console.error('Docx library not found');
       alert('Document library not loaded. Please refresh the page and try again.');
+      return;
+    }
+
+    // Check if saveAs is available
+    if (typeof saveAs === 'undefined') {
+      console.error('SaveAs library not found');
+      alert('File saving library not loaded. Please refresh the page and try again.');
       return;
     }
 
@@ -745,159 +756,115 @@ async function downloadWordDocument() {
       adaptationText = adaptationText.replace('Enzyme production', `Enzyme production (${state.customEnzyme}: ${state.enzymeFunction})`);
     }
 
+    console.log('Creating document...');
+
     const doc = new docx.Document({
       sections: [{
+        properties: {},
         children: [
           new docx.Paragraph({
-            children: [
-              new docx.TextRun({
-                text: "Make Your Own Microbe - Design Summary",
-                bold: true,
-                size: 28,
-              }),
-            ],
+            text: "Make Your Own Microbe - Design Summary",
+            heading: docx.HeadingLevel.TITLE,
             alignment: docx.AlignmentType.CENTER,
-            spacing: { after: 400 },
           }),
           new docx.Paragraph({
-            children: [
-              new docx.TextRun("Student Name: _________________________    Date: _________________________"),
-            ],
-            spacing: { after: 400 },
-          }),
-          new docx.Paragraph({
-            children: [
-              new docx.TextRun({
-                text: `Microbe Name: ${state.name}`,
-                bold: true,
-                size: 24,
-              }),
-            ],
-            spacing: { after: 300 },
-          }),
-          new docx.Paragraph({
-            children: [
-              new docx.TextRun({
-                text: "Basic Characteristics",
-                bold: true,
-                size: 18,
-              }),
-            ],
+            text: "",
             spacing: { after: 200 },
           }),
           new docx.Paragraph({
-            children: [
-              new docx.TextRun(`Microbe Type: ${state.microbeType}`),
-            ],
+            text: `Student Name: _________________________    Date: _________________________`,
+            spacing: { after: 200 },
+          }),
+          new docx.Paragraph({
+            text: "",
+            spacing: { after: 200 },
+          }),
+          new docx.Paragraph({
+            text: `Microbe Name: ${state.name}`,
+            heading: docx.HeadingLevel.HEADING_1,
+            spacing: { after: 200 },
+          }),
+          new docx.Paragraph({
+            text: "Basic Characteristics",
+            heading: docx.HeadingLevel.HEADING_2,
+            spacing: { after: 100 },
+          }),
+          new docx.Paragraph({
+            text: `Microbe Type: ${state.microbeType}`,
             spacing: { after: 100 },
           }),
           ...Object.entries(state.traits).map(([key, value]) =>
             new docx.Paragraph({
-              children: [
-                new docx.TextRun(`${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`),
-              ],
+              text: `${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`,
               spacing: { after: 100 },
             })
           ),
           new docx.Paragraph({
-            children: [
-              new docx.TextRun({
-                text: "Transmission and Entry",
-                bold: true,
-                size: 18,
-              }),
-            ],
-            spacing: { after: 200, before: 300 },
+            text: "Transmission and Entry",
+            heading: docx.HeadingLevel.HEADING_2,
+            spacing: { after: 100, before: 200 },
           }),
           new docx.Paragraph({
-            children: [
-              new docx.TextRun(`Transmission Method: ${state.transmission} - ${state.transmissionDetail}`),
-            ],
+            text: `Transmission Method: ${state.transmission} - ${state.transmissionDetail}`,
             spacing: { after: 100 },
           }),
           new docx.Paragraph({
-            children: [
-              new docx.TextRun(`Portal of Entry: ${state.portalOfEntry}`),
-            ],
+            text: `Portal of Entry: ${state.portalOfEntry}`,
             spacing: { after: 100 },
           }),
           new docx.Paragraph({
-            children: [
-              new docx.TextRun({
-                text: "Reproduction and Survival",
-                bold: true,
-                size: 18,
-              }),
-            ],
-            spacing: { after: 200, before: 300 },
+            text: "Reproduction and Survival",
+            heading: docx.HeadingLevel.HEADING_2,
+            spacing: { after: 100, before: 200 },
           }),
           new docx.Paragraph({
-            children: [
-              new docx.TextRun(`Reproduction Method: ${state.reproduction}`),
-            ],
+            text: `Reproduction Method: ${state.reproduction}`,
             spacing: { after: 100 },
           }),
           new docx.Paragraph({
-            children: [
-              new docx.TextRun(`Adaptations: ${adaptationText}`),
-            ],
+            text: `Adaptations: ${adaptationText}`,
             spacing: { after: 100 },
           }),
           new docx.Paragraph({
-            children: [
-              new docx.TextRun({
-                text: "Disease Manifestation",
-                bold: true,
-                size: 18,
-              }),
-            ],
-            spacing: { after: 200, before: 300 },
+            text: "Disease Manifestation",
+            heading: docx.HeadingLevel.HEADING_2,
+            spacing: { after: 100, before: 200 },
           }),
           new docx.Paragraph({
-            children: [
-              new docx.TextRun(`Predicted Symptoms: ${state.symptoms}`),
-            ],
-            spacing: { after: 400 },
+            text: `Predicted Symptoms: ${state.symptoms}`,
+            spacing: { after: 200 },
           }),
           new docx.Paragraph({
-            children: [
-              new docx.TextRun({
-                text: "Instructor Comments:",
-                bold: true,
-                size: 18,
-              }),
-            ],
-            spacing: { after: 200, before: 400 },
+            text: "Instructor Comments:",
+            heading: docx.HeadingLevel.HEADING_2,
+            spacing: { after: 100, before: 300 },
           }),
           new docx.Paragraph({
-            children: [new docx.TextRun("")],
+            text: "",
             spacing: { after: 300 },
           }),
           new docx.Paragraph({
-            children: [new docx.TextRun("")],
+            text: "",
             spacing: { after: 300 },
           }),
           new docx.Paragraph({
-            children: [new docx.TextRun("")],
+            text: "",
             spacing: { after: 300 },
           }),
         ],
       }],
     });
 
+    console.log('Document created, generating blob...');
     const blob = await docx.Packer.toBlob(doc);
-    
-    // Check if saveAs is available
-    if (typeof saveAs === 'undefined') {
-      alert('File saving library not loaded. Please refresh the page and try again.');
-      return;
-    }
+    console.log('Blob created, saving file...');
     
     saveAs(blob, `${state.name.replace(/[^a-zA-Z0-9]/g, '_')}_Microbe_Design.docx`);
+    console.log('File saved successfully!');
     
   } catch (error) {
     console.error('Error creating document:', error);
-    alert('There was an error creating the document. Please refresh the page and try again.');
+    alert('There was an error creating the document. Error: ' + error.message);
   }
 }
 

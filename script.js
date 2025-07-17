@@ -72,7 +72,7 @@ function showTraitsScreen() {
   const type = state.microbeType;
   let html = `
     <div class="progress-bar">
-      <div class="progress-fill" style="width: 33%"></div>
+      <div class="progress-fill" style="width: 30%"></div>
     </div>
     <h2>Step 2: Select Structural Traits</h2>
     <p>Choose the structural characteristics that will define your ${type}'s biology and pathogenic potential.</p>
@@ -210,7 +210,7 @@ function showTransmissionScreen() {
   state.currentStep = 3;
   document.getElementById('app').innerHTML = `
     <div class="progress-bar">
-      <div class="progress-fill" style="width: 43%"></div>
+      <div class="progress-fill" style="width: 50%"></div>
     </div>
     <h2>Step 3: Choose Transmission Method</h2>
     <p>How will your microbe spread from host to host?</p>
@@ -367,7 +367,7 @@ function showReproductionScreen() {
 
   document.getElementById('app').innerHTML = `
     <div class="progress-bar">
-      <div class="progress-fill" style="width: 57%"></div>
+      <div class="progress-fill" style="width: 67%"></div>
     </div>
     <h2>Step 4: Select Reproduction Method</h2>
     <p>${description}</p>

@@ -8,6 +8,7 @@ let state = {
   reproduction: '',
   adaptations: [],
   toxinType: '',
+  toxinSubtype: '',
   customEnzyme: '',
   enzymeFunction: '',
   symptoms: '',
@@ -455,15 +456,23 @@ function showAdaptationsScreen() {
     <div id="toxin-details" class="hidden">
       <div class="form-group">
         <label for="toxinType">Type of Toxin:</label>
-        <select id="toxinType">
+        <select id="toxinType" onchange="updateToxinSubtype()">
           <option value="">-- Select toxin type --</option>
           <option value="Exotoxin">Exotoxin</option>
           <option value="Endotoxin">Endotoxin</option>
-          <option value="Enterotoxin">Enterotoxin</option>
-          <option value="Neurotoxin">Neurotoxin</option>
-          <option value="Cytotoxin">Cytotoxin</option>
-          <option value="Hemotoxin">Hemotoxin</option>
         </select>
+      </div>
+      <div id="toxin-subtype" class="hidden">
+        <div class="form-group">
+          <label for="toxinSubtype">Exotoxin Subtype:</label>
+          <select id="toxinSubtype">
+            <option value="">-- Select exotoxin subtype --</option>
+            <option value="Enterotoxin">Enterotoxin</option>
+            <option value="Neurotoxin">Neurotoxin</option>
+            <option value="Cytotoxin">Cytotoxin</option>
+            <option value="Hemotoxin">Hemotoxin</option>
+          </select>
+        </div>
       </div>
     </div>
     
@@ -496,6 +505,8 @@ function toggleAdaptationDetails(adaptationId) {
     } else {
       toxinDetails.classList.add('hidden');
       document.getElementById('toxinType').value = '';
+      document.getElementById('toxinSubtype').value = '';
+      document.getElementById('toxin-subtype').classList.add('hidden');
     }
   }
   
@@ -507,6 +518,18 @@ function toggleAdaptationDetails(adaptationId) {
       document.getElementById('customEnzyme').value = '';
       document.getElementById('enzymeFunction').value = '';
     }
+  }
+}
+
+function updateToxinSubtype() {
+  const toxinType = document.getElementById('toxinType').value;
+  const subtypeDiv = document.getElementById('toxin-subtype');
+  
+  if (toxinType === 'Exotoxin') {
+    subtypeDiv.classList.remove('hidden');
+  } else {
+    subtypeDiv.classList.add('hidden');
+    document.getElementById('toxinSubtype').value = '';
   }
 }
 
@@ -528,6 +551,18 @@ function saveAdaptations() {
       return;
     }
     state.toxinType = toxinType;
+    
+    // Save subtype if exotoxin is selected
+    if (toxinType === 'Exotoxin') {
+      const toxinSubtype = document.getElementById('toxinSubtype').value;
+      if (!toxinSubtype) {
+        alert("Please select an exotoxin subtype.");
+        return;
+      }
+      state.toxinSubtype = toxinSubtype;
+    } else {
+      state.toxinSubtype = '';
+    }
   }
   
   // Save enzyme details if selected
@@ -620,7 +655,11 @@ function showSummaryScreen() {
   // Create adaptation display text
   let adaptationText = state.adaptations.join(', ');
   if (state.toxinType) {
-    adaptationText = adaptationText.replace('Toxin secretion', `Toxin secretion (${state.toxinType})`);
+    let toxinDisplay = state.toxinType;
+    if (state.toxinSubtype) {
+      toxinDisplay += ` (${state.toxinSubtype})`;
+    }
+    adaptationText = adaptationText.replace('Toxin secretion', `Toxin secretion (${toxinDisplay})`);
   }
   if (state.customEnzyme) {
     adaptationText = adaptationText.replace('Enzyme production', `Enzyme production (${state.customEnzyme}: ${state.enzymeFunction})`);
@@ -687,10 +726,20 @@ function showSummaryScreen() {
 
 async function downloadWordDocument() {
   try {
+    // Check if docx is available
+    if (typeof docx === 'undefined') {
+      alert('Document library not loaded. Please refresh the page and try again.');
+      return;
+    }
+
     // Create adaptation text for document
     let adaptationText = state.adaptations.join(', ');
     if (state.toxinType) {
-      adaptationText = adaptationText.replace('Toxin secretion', `Toxin secretion (${state.toxinType})`);
+      let toxinDisplay = state.toxinType;
+      if (state.toxinSubtype) {
+        toxinDisplay += ` (${state.toxinSubtype})`;
+      }
+      adaptationText = adaptationText.replace('Toxin secretion', `Toxin secretion (${toxinDisplay})`);
     }
     if (state.customEnzyme) {
       adaptationText = adaptationText.replace('Enzyme production', `Enzyme production (${state.customEnzyme}: ${state.enzymeFunction})`);
@@ -698,95 +747,138 @@ async function downloadWordDocument() {
 
     const doc = new docx.Document({
       sections: [{
-        properties: {},
         children: [
           new docx.Paragraph({
-            text: "Make Your Own Microbe - Design Summary",
-            heading: docx.HeadingLevel.TITLE,
+            children: [
+              new docx.TextRun({
+                text: "Make Your Own Microbe - Design Summary",
+                bold: true,
+                size: 28,
+              }),
+            ],
             alignment: docx.AlignmentType.CENTER,
+            spacing: { after: 400 },
           }),
           new docx.Paragraph({
-            text: "",
+            children: [
+              new docx.TextRun("Student Name: _________________________    Date: _________________________"),
+            ],
+            spacing: { after: 400 },
+          }),
+          new docx.Paragraph({
+            children: [
+              new docx.TextRun({
+                text: `Microbe Name: ${state.name}`,
+                bold: true,
+                size: 24,
+              }),
+            ],
+            spacing: { after: 300 },
+          }),
+          new docx.Paragraph({
+            children: [
+              new docx.TextRun({
+                text: "Basic Characteristics",
+                bold: true,
+                size: 18,
+              }),
+            ],
             spacing: { after: 200 },
           }),
           new docx.Paragraph({
-            text: `Student Name: _________________________    Date: _________________________`,
-            spacing: { after: 200 },
-          }),
-          new docx.Paragraph({
-            text: "",
-            spacing: { after: 200 },
-          }),
-          new docx.Paragraph({
-            text: `Microbe Name: ${state.name}`,
-            heading: docx.HeadingLevel.HEADING_1,
-            spacing: { after: 200 },
-          }),
-          new docx.Paragraph({
-            text: "Basic Characteristics",
-            heading: docx.HeadingLevel.HEADING_2,
-            spacing: { after: 100 },
-          }),
-          new docx.Paragraph({
-            text: `Microbe Type: ${state.microbeType}`,
+            children: [
+              new docx.TextRun(`Microbe Type: ${state.microbeType}`),
+            ],
             spacing: { after: 100 },
           }),
           ...Object.entries(state.traits).map(([key, value]) =>
             new docx.Paragraph({
-              text: `${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`,
+              children: [
+                new docx.TextRun(`${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`),
+              ],
               spacing: { after: 100 },
             })
           ),
           new docx.Paragraph({
-            text: "Transmission and Entry",
-            heading: docx.HeadingLevel.HEADING_2,
-            spacing: { after: 100, before: 200 },
+            children: [
+              new docx.TextRun({
+                text: "Transmission and Entry",
+                bold: true,
+                size: 18,
+              }),
+            ],
+            spacing: { after: 200, before: 300 },
           }),
           new docx.Paragraph({
-            text: `Transmission Method: ${state.transmission} - ${state.transmissionDetail}`,
+            children: [
+              new docx.TextRun(`Transmission Method: ${state.transmission} - ${state.transmissionDetail}`),
+            ],
             spacing: { after: 100 },
           }),
           new docx.Paragraph({
-            text: `Portal of Entry: ${state.portalOfEntry}`,
+            children: [
+              new docx.TextRun(`Portal of Entry: ${state.portalOfEntry}`),
+            ],
             spacing: { after: 100 },
           }),
           new docx.Paragraph({
-            text: "Reproduction and Survival",
-            heading: docx.HeadingLevel.HEADING_2,
-            spacing: { after: 100, before: 200 },
+            children: [
+              new docx.TextRun({
+                text: "Reproduction and Survival",
+                bold: true,
+                size: 18,
+              }),
+            ],
+            spacing: { after: 200, before: 300 },
           }),
           new docx.Paragraph({
-            text: `Reproduction Method: ${state.reproduction}`,
+            children: [
+              new docx.TextRun(`Reproduction Method: ${state.reproduction}`),
+            ],
             spacing: { after: 100 },
           }),
           new docx.Paragraph({
-            text: `Adaptations: ${adaptationText}`,
+            children: [
+              new docx.TextRun(`Adaptations: ${adaptationText}`),
+            ],
             spacing: { after: 100 },
           }),
           new docx.Paragraph({
-            text: "Disease Manifestation",
-            heading: docx.HeadingLevel.HEADING_2,
-            spacing: { after: 100, before: 200 },
+            children: [
+              new docx.TextRun({
+                text: "Disease Manifestation",
+                bold: true,
+                size: 18,
+              }),
+            ],
+            spacing: { after: 200, before: 300 },
           }),
           new docx.Paragraph({
-            text: `Predicted Symptoms: ${state.symptoms}`,
-            spacing: { after: 200 },
+            children: [
+              new docx.TextRun(`Predicted Symptoms: ${state.symptoms}`),
+            ],
+            spacing: { after: 400 },
           }),
           new docx.Paragraph({
-            text: "Instructor Comments:",
-            heading: docx.HeadingLevel.HEADING_2,
-            spacing: { after: 100, before: 300 },
+            children: [
+              new docx.TextRun({
+                text: "Instructor Comments:",
+                bold: true,
+                size: 18,
+              }),
+            ],
+            spacing: { after: 200, before: 400 },
           }),
           new docx.Paragraph({
-            text: "",
+            children: [new docx.TextRun("")],
             spacing: { after: 300 },
           }),
           new docx.Paragraph({
-            text: "",
+            children: [new docx.TextRun("")],
             spacing: { after: 300 },
           }),
           new docx.Paragraph({
-            text: "",
+            children: [new docx.TextRun("")],
             spacing: { after: 300 },
           }),
         ],
@@ -794,11 +886,18 @@ async function downloadWordDocument() {
     });
 
     const blob = await docx.Packer.toBlob(doc);
+    
+    // Check if saveAs is available
+    if (typeof saveAs === 'undefined') {
+      alert('File saving library not loaded. Please refresh the page and try again.');
+      return;
+    }
+    
     saveAs(blob, `${state.name.replace(/[^a-zA-Z0-9]/g, '_')}_Microbe_Design.docx`);
     
   } catch (error) {
     console.error('Error creating document:', error);
-    alert('There was an error creating the document. Please try again.');
+    alert('There was an error creating the document. Please refresh the page and try again.');
   }
 }
 
@@ -816,6 +915,7 @@ function resetApp() {
     reproduction: '',
     adaptations: [],
     toxinType: '',
+    toxinSubtype: '',
     customEnzyme: '',
     enzymeFunction: '',
     symptoms: '',

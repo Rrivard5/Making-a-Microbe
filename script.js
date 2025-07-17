@@ -724,25 +724,8 @@ function showSummaryScreen() {
   `;
 }
 
-async function downloadWordDocument() {
+function downloadWordDocument() {
   try {
-    // Wait for libraries to load
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    // Check if docx is available
-    if (typeof docx === 'undefined') {
-      console.error('Docx library not found');
-      alert('Document library not loaded. Please refresh the page and try again.');
-      return;
-    }
-
-    // Check if saveAs is available
-    if (typeof saveAs === 'undefined') {
-      console.error('SaveAs library not found');
-      alert('File saving library not loaded. Please refresh the page and try again.');
-      return;
-    }
-
     // Create adaptation text for document
     let adaptationText = state.adaptations.join(', ');
     if (state.toxinType) {
@@ -756,115 +739,125 @@ async function downloadWordDocument() {
       adaptationText = adaptationText.replace('Enzyme production', `Enzyme production (${state.customEnzyme}: ${state.enzymeFunction})`);
     }
 
-    console.log('Creating document...');
+    // Create RTF content (Rich Text Format - opens in Word)
+    const rtfContent = `{\\rtf1\\ansi\\deff0 {\\fonttbl {\\f0 Times New Roman;}}
+\\f0\\fs24 
+\\qc\\b\\fs32 Make Your Own Microbe - Design Summary\\b0\\fs24\\par
+\\par
+\\par
+Student Name: _________________________    Date: _________________________\\par
+\\par
+\\par
+\\b\\fs28 Microbe Name: ${state.name}\\b0\\fs24\\par
+\\par
+\\b\\fs20 Basic Characteristics\\b0\\par
+\\par
+Microbe Type: ${state.microbeType}\\par
+${Object.entries(state.traits).map(([key, value]) => 
+  `${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}\\par`
+).join('')}
+\\par
+\\b\\fs20 Transmission and Entry\\b0\\par
+\\par
+Transmission Method: ${state.transmission} - ${state.transmissionDetail}\\par
+Portal of Entry: ${state.portalOfEntry}\\par
+\\par
+\\b\\fs20 Reproduction and Survival\\b0\\par
+\\par
+Reproduction Method: ${state.reproduction}\\par
+Adaptations: ${adaptationText}\\par
+\\par
+\\b\\fs20 Disease Manifestation\\b0\\par
+\\par
+Predicted Symptoms: ${state.symptoms}\\par
+\\par
+\\par
+\\b\\fs20 Instructor Comments:\\b0\\par
+\\par
+\\par
+\\par
+\\par
+}`;
 
-    const doc = new docx.Document({
-      sections: [{
-        properties: {},
-        children: [
-          new docx.Paragraph({
-            text: "Make Your Own Microbe - Design Summary",
-            heading: docx.HeadingLevel.TITLE,
-            alignment: docx.AlignmentType.CENTER,
-          }),
-          new docx.Paragraph({
-            text: "",
-            spacing: { after: 200 },
-          }),
-          new docx.Paragraph({
-            text: `Student Name: _________________________    Date: _________________________`,
-            spacing: { after: 200 },
-          }),
-          new docx.Paragraph({
-            text: "",
-            spacing: { after: 200 },
-          }),
-          new docx.Paragraph({
-            text: `Microbe Name: ${state.name}`,
-            heading: docx.HeadingLevel.HEADING_1,
-            spacing: { after: 200 },
-          }),
-          new docx.Paragraph({
-            text: "Basic Characteristics",
-            heading: docx.HeadingLevel.HEADING_2,
-            spacing: { after: 100 },
-          }),
-          new docx.Paragraph({
-            text: `Microbe Type: ${state.microbeType}`,
-            spacing: { after: 100 },
-          }),
-          ...Object.entries(state.traits).map(([key, value]) =>
-            new docx.Paragraph({
-              text: `${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`,
-              spacing: { after: 100 },
-            })
-          ),
-          new docx.Paragraph({
-            text: "Transmission and Entry",
-            heading: docx.HeadingLevel.HEADING_2,
-            spacing: { after: 100, before: 200 },
-          }),
-          new docx.Paragraph({
-            text: `Transmission Method: ${state.transmission} - ${state.transmissionDetail}`,
-            spacing: { after: 100 },
-          }),
-          new docx.Paragraph({
-            text: `Portal of Entry: ${state.portalOfEntry}`,
-            spacing: { after: 100 },
-          }),
-          new docx.Paragraph({
-            text: "Reproduction and Survival",
-            heading: docx.HeadingLevel.HEADING_2,
-            spacing: { after: 100, before: 200 },
-          }),
-          new docx.Paragraph({
-            text: `Reproduction Method: ${state.reproduction}`,
-            spacing: { after: 100 },
-          }),
-          new docx.Paragraph({
-            text: `Adaptations: ${adaptationText}`,
-            spacing: { after: 100 },
-          }),
-          new docx.Paragraph({
-            text: "Disease Manifestation",
-            heading: docx.HeadingLevel.HEADING_2,
-            spacing: { after: 100, before: 200 },
-          }),
-          new docx.Paragraph({
-            text: `Predicted Symptoms: ${state.symptoms}`,
-            spacing: { after: 200 },
-          }),
-          new docx.Paragraph({
-            text: "Instructor Comments:",
-            heading: docx.HeadingLevel.HEADING_2,
-            spacing: { after: 100, before: 300 },
-          }),
-          new docx.Paragraph({
-            text: "",
-            spacing: { after: 300 },
-          }),
-          new docx.Paragraph({
-            text: "",
-            spacing: { after: 300 },
-          }),
-          new docx.Paragraph({
-            text: "",
-            spacing: { after: 300 },
-          }),
-        ],
-      }],
-    });
-
-    console.log('Document created, generating blob...');
-    const blob = await docx.Packer.toBlob(doc);
-    console.log('Blob created, saving file...');
+    // Create blob and download
+    const blob = new Blob([rtfContent], { type: 'application/rtf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${state.name.replace(/[^a-zA-Z0-9]/g, '_')}_Microbe_Design.rtf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
     
-    saveAs(blob, `${state.name.replace(/[^a-zA-Z0-9]/g, '_')}_Microbe_Design.docx`);
-    console.log('File saved successfully!');
+    console.log('RTF document downloaded successfully!');
     
   } catch (error) {
     console.error('Error creating document:', error);
-    alert('There was an error creating the document. Error: ' + error.message);
+    
+    // Fallback to plain text if RTF fails
+    try {
+      // Create adaptation text for document
+      let adaptationText = state.adaptations.join(', ');
+      if (state.toxinType) {
+        let toxinDisplay = state.toxinType;
+        if (state.toxinSubtype) {
+          toxinDisplay += ` (${state.toxinSubtype})`;
+        }
+        adaptationText = adaptationText.replace('Toxin secretion', `Toxin secretion (${toxinDisplay})`);
+      }
+      if (state.customEnzyme) {
+        adaptationText = adaptationText.replace('Enzyme production', `Enzyme production (${state.customEnzyme}: ${state.enzymeFunction})`);
+      }
+
+      const textContent = `MAKE YOUR OWN MICROBE - DESIGN SUMMARY
+
+Student Name: _________________________    Date: _________________________
+
+
+MICROBE NAME: ${state.name}
+
+BASIC CHARACTERISTICS
+Microbe Type: ${state.microbeType}
+${Object.entries(state.traits).map(([key, value]) => 
+  `${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`
+).join('\n')}
+
+TRANSMISSION AND ENTRY
+Transmission Method: ${state.transmission} - ${state.transmissionDetail}
+Portal of Entry: ${state.portalOfEntry}
+
+REPRODUCTION AND SURVIVAL
+Reproduction Method: ${state.reproduction}
+Adaptations: ${adaptationText}
+
+DISEASE MANIFESTATION
+Predicted Symptoms: ${state.symptoms}
+
+
+INSTRUCTOR COMMENTS:
+
+
+
+
+`;
+
+      const blob = new Blob([textContent], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${state.name.replace(/[^a-zA-Z0-9]/g, '_')}_Microbe_Design.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      alert('Downloaded as text file (RTF failed). You can copy and paste this into Word.');
+      
+    } catch (textError) {
+      console.error('Both RTF and text download failed:', textError);
+      alert('Download failed. Please copy the text from the summary above and paste it into a Word document.');
+    }
   }
 }
 

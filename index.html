@@ -18,24 +18,21 @@
   <button id="downloadBtn" class="download-btn">📄 Download Word Document</button>
 
   <script>
+    // Clear state for user-driven input
     const state = {
-      name: "Bacterium deadlicus",
-      microbeType: "Bacterium",
-      traits: {
-        shape: "Bacillus",
-        motility: "Flagellated",
-        cellwall: "Gram-negative"
-      },
-      transmission: "Vehicle Transmission",
-      transmissionDetail: "Foodborne",
-      portalOfEntry: "Gastrointestinal tract",
-      reproduction: "Binary fission",
-      adaptations: ["Capsule formation", "Antibiotic resistance", "Toxin secretion", "Enzyme production"],
-      toxinType: "Exotoxin",
-      toxinSubtype: "Neurotoxin",
-      customEnzyme: "Cellulase",
-      enzymeFunction: "Breaks down plant cell walls",
-      symptoms: "Vomiting, diarrhea, and muscle paralysis"
+      name: '',
+      microbeType: '',
+      traits: {},
+      transmission: '',
+      transmissionDetail: '',
+      portalOfEntry: '',
+      reproduction: '',
+      adaptations: [],
+      toxinType: '',
+      toxinSubtype: '',
+      customEnzyme: '',
+      enzymeFunction: '',
+      symptoms: ''
     };
 
     function renderSummary() {
@@ -51,10 +48,13 @@
         adaptationText = adaptationText.replace('Enzyme production', `Enzyme production (${state.customEnzyme}: ${state.enzymeFunction})`);
       }
 
+      const traitsMarkup = Object.entries(state.traits)
+        .map(([k, v]) => `<p><strong>${k}:</strong> ${v}</p>`).join('');
+
       document.getElementById('summary').innerHTML = `
-        <h3>${state.name}</h3>
-        <p><strong>Type:</strong> ${state.microbeType}</p>
-        ${Object.entries(state.traits).map(([k, v]) => `<p><strong>${k}:</strong> ${v}</p>`).join('')}
+        <h3>${state.name || '(Name Missing)'}</h3>
+        <p><strong>Type:</strong> ${state.microbeType || '(Not selected)'}</p>
+        ${traitsMarkup}
         <p><strong>Transmission:</strong> ${state.transmission} - ${state.transmissionDetail}</p>
         <p><strong>Portal of Entry:</strong> ${state.portalOfEntry}</p>
         <p><strong>Reproduction:</strong> ${state.reproduction}</p>
@@ -85,11 +85,11 @@
 Student Name: _________________________    Date: _________________________\\par
 \\par
 \\par
-\\b\\fs28 Microbe Name: ${state.name}\\b0\\fs24\\par
+\\b\\fs28 Microbe Name: ${state.name || '(Name Missing)'}\\b0\\fs24\\par
 \\par
 \\b\\fs20 Basic Characteristics\\b0\\par
 \\par
-Microbe Type: ${state.microbeType}\\par
+Microbe Type: ${state.microbeType || '(Not selected)'}\\par
 ${Object.entries(state.traits).map(([k, v]) => `${k.charAt(0).toUpperCase() + k.slice(1)}: ${v}\\par`).join('')}
 \\par
 \\b\\fs20 Transmission and Entry\\b0\\par
@@ -117,7 +117,7 @@ Predicted Symptoms: ${state.symptoms}\\par
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${state.name.replace(/[^a-zA-Z0-9]/g, '_')}_Microbe_Design.doc`;
+        a.download = `${(state.name || 'Microbe_Design').replace(/[^a-zA-Z0-9]/g, '_')}.doc`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -130,7 +130,6 @@ Predicted Symptoms: ${state.symptoms}\\par
     }
 
     document.getElementById("downloadBtn").addEventListener("click", downloadWordDocument);
-
     renderSummary();
   </script>
 </body>

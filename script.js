@@ -21,6 +21,11 @@ function goTo(screen) {
   screens[screen]();
 }
 
+function selectType(type) {
+  state.microbeType = type;
+  goTo('traits');
+}
+
 const screens = {
   welcome() {
     app.innerHTML = `
@@ -42,6 +47,109 @@ const screens = {
       <br><button onclick="goTo('welcome')">Back</button>
     `;
   },
+
+  traits() {
+    const type = state.microbeType;
+    let html = `<h2>Step 2: Select Structural Traits</h2><p>If you need a reminder, consult your class PowerPoints.</p>`;
+
+    if (type === 'virus') {
+      html += `
+        <label>Capsid Shape:</label>
+        <select id="capsid">
+          <option value="">-- Select --</option>
+          <option>Icosahedral</option>
+          <option>Helical</option>
+          <option>Complex</option>
+        </select>
+        <label>Envelope:</label>
+        <select id="envelope">
+          <option value="">-- Select --</option>
+          <option>Yes</option>
+          <option>No</option>
+        </select>
+        <label>Genome Type:</label>
+        <select id="genome">
+          <option value="">-- Select --</option>
+          <option>ssRNA (positive-sense)</option>
+          <option>ssRNA (negative-sense)</option>
+          <option>dsRNA</option>
+          <option>ssDNA</option>
+          <option>dsDNA</option>
+          <option>Retrovirus</option>
+        </select>
+      `;
+    } else if (type === 'bacterium') {
+      html += `
+        <label>Shape:</label>
+        <select id="shape">
+          <option value="">-- Select --</option>
+          <option>Coccus</option>
+          <option>Bacillus</option>
+          <option>Coccobacillus</option>
+          <option>Spirochete</option>
+          <option>Vibrio</option>
+        </select>
+        <label>Motility:</label>
+        <select id="motility">
+          <option value="">-- Select --</option>
+          <option>Non-motile</option>
+          <option>Flagellated</option>
+          <option>Cytoskeletal gliding</option>
+        </select>
+        <label>Cell Wall:</label>
+        <select id="cellwall">
+          <option value="">-- Select --</option>
+          <option>Gram-positive</option>
+          <option>Gram-negative</option>
+        </select>
+      `;
+    } else if (type === 'fungus') {
+      html += `
+        <label>Structure:</label>
+        <select id="fungitype">
+          <option value="">-- Select --</option>
+          <option>Unicellular</option>
+          <option>Multicellular</option>
+          <option>Dimorphic</option>
+        </select>
+        <label>Reproduction:</label>
+        <select id="fungirepro">
+          <option value="">-- Select --</option>
+          <option>Asexual</option>
+          <option>Sexual</option>
+          <option>Both</option>
+        </select>
+      `;
+    } else if (type === 'helminth') {
+      html += `
+        <label>Body Form:</label>
+        <select id="helminthform">
+          <option value="">-- Select --</option>
+          <option>Nematode</option>
+          <option>Cestode</option>
+          <option>Trematode</option>
+        </select>
+      `;
+    }
+
+    html += `
+      <button onclick="saveTraits()">Next</button>
+      <button onclick="goTo('microbeType')">Back</button>
+    `;
+    app.innerHTML = html;
+  },
+
+  // (rest of screens remain defined and unchanged)
+};
+
+function saveTraits() {
+  const selects = document.querySelectorAll('select');
+  for (let sel of selects) {
+    if (!sel.value) return alert("Please complete all selections.");
+    state.traits[sel.id] = sel.value;
+  }
+  goTo('transmission');
+}
 
   transmission() {
     app.innerHTML = `

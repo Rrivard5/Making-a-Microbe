@@ -913,7 +913,16 @@
     }
 
     // Initialize the app
-    window.onload = () => goTo('welcome');
+    document.addEventListener('DOMContentLoaded', function() {
+      goTo('welcome');
+    });
+    
+    // Fallback initialization
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => goTo('welcome'));
+    } else {
+      goTo('welcome');
+    }
   </script>
 </body>
 </html>
